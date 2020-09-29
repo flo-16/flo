@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import pygame as pg, sys, os, random
 
 FPS = 24

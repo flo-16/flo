@@ -187,6 +187,9 @@ def main():
         for evt in pg.event.get():
             if evt.type == pg.QUIT:
                 running = False
+            if evt.type == pg.KEYDOWN:
+                if evt.key == pg.K_ESCAPE:
+                    running = False
             if evt.type == pg.MOUSEBUTTONDOWN:
                 if evt.button == 1:
                     click = True

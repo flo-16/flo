@@ -120,6 +120,9 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    running = False
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == BU_LEFT:
                     click = True
