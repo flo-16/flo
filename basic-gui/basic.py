@@ -3,8 +3,9 @@ import pygame as pg, sys, os
 
 FPS = 60
 
-DISPLAY_WIDTH, DISPLAY_HEIGHT = (200, 200)
+DISPLAY_WIDTH, DISPLAY_HEIGHT = (400, 300)
 DISPLAY_CAPTION = "Pygame-Basic"
+BG_COLOR = (47, 79, 79)
 
 class Enum(object):
   def __init__(self, tpList):
@@ -12,6 +13,17 @@ class Enum(object):
   def __getattr__(self, name):
     return self.tpList.index(name)
 BUTTON = Enum(('NO', 'LEFT', 'MIDD', 'RIGHT'))
+
+class Any(object):
+    def __init__(self):
+        self._screen = 0
+        self._bgPic = 0
+        pass
+    def anySet(self, val):
+        self._screen = val[0]
+        self._bgPic = val[1]
+        pass
+    anySet = property(None, anySet)
 
 def main():
     pg.init()
@@ -30,6 +42,7 @@ def main():
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == BUTTON.LEFT:
                     pass
+        screen.fill(BG_COLOR)
         pg.display.flip()
         clock.tick(FPS)
     pg.quit()
