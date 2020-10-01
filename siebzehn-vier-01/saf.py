@@ -10,14 +10,20 @@ CARDS_POS = [   [(50, 120), (130, 120), (210, 120), (290, 120), (370, 120), (450
 RECT_M_POS = [ 530, 122, 326 ]
 DISPLAY_WIDTH, DISPLAY_HEIGHT = (652, 510)
 DISPLAY_COLOR = (0, 100, 0)
-BU_LEFT, BU_RIGHT = (1, 3)
-PLAYER, BANK, OVER = (0, 1, 2)
 RESULT_COLOR = (255, 248, 220)
 DANGER_COLOR = (220, 20, 60)
 
+class Enum(object):
+  def __init__(self, tpList):
+    self.tpList = tpList
+  def __getattr__(self, name):
+    return self.tpList.index(name)
+BUTTON = Enum(('NO', 'LEFT', 'MIDD', 'RIGHT'))
+STATUS = Enum(('PLAYER', 'BANK', 'OVER'))
+
 globVars = {
     'player': True,
-    'status': PLAYER,
+    'status': STATUS.PLAYER,
     'wins': [0, 0], 
     'count': [0, 0],
     'points': [0, 0]
@@ -43,7 +49,7 @@ def newTalon():
 
 def reset():
     globVars['player'] = True
-    globVars['status'] = PLAYER
+    globVars['status'] = STATUS.PLAYER
     for i in [False, True]:
         del pics_out[i][:]
         globVars['count'][i] = 0
@@ -82,10 +88,10 @@ def getCard():
     pnt = globVars['points'][pl]
     if(((globVars['count'][pl] == 2) and (pnt == 22)) or (pnt == 21)):
         globVars['wins'][pl] += 1
-        globVars['status'] = OVER
+        globVars['status'] = STATUS.OVER
     elif pnt > 21:
         globVars['wins'][not pl] += 1
-        globVars['status'] = OVER
+        globVars['status'] = STATUS.OVER
 
 def risiko():
     global globVars
@@ -101,14 +107,14 @@ def bank():
     global globVars
     if not globVars['count'][True]:
         return
-    globVars['status'] = BANK
+    globVars['status'] = STATUS.BANK
     globVars['player'] = False
     getCard()
 
 def nextCard():
     global globVars
     if risiko():
-        globVars['status'] = OVER
+        globVars['status'] = STATUS.OVER
         if globVars['points'][True] > globVars['points'][False]:
             globVars['wins'][True] += 1
         else:
@@ -128,17 +134,17 @@ pg.display.set_caption("Schlag den Pussel! [ESC] = Quit")
 click = False
 running = True
 while running:
-    if globVars['status'] == BANK:
+    if globVars['status'] == STATUS.BANK:
         nextCard()
     if click:
         click = False
         mx, my = pg.mouse.get_pos()
         yOk = 380 < my < 500
-        if yOk and (42 < mx < 202) and (globVars['status'] == PLAYER):
+        if yOk and (42 < mx < 202) and (globVars['status'] == STATUS.PLAYER):
             getCard()
-        if yOk and (240 < mx < 410) and (globVars['status'] == OVER):
+        if yOk and (240 < mx < 410) and (globVars['status'] == STATUS.OVER):
             reset()
-        if yOk and (450 < mx < 610) and (globVars['status'] == PLAYER):
+        if yOk and (450 < mx < 610) and (globVars['status'] == STATUS.PLAYER):
             bank()
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -147,7 +153,7 @@ while running:
             if event.key == pg.K_ESCAPE:
                 running = False
         if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == BU_LEFT:
+            if event.button == BUTTON.LEFT:
                 click = True
 
     screen.fill(DISPLAY_COLOR)
