@@ -62,7 +62,7 @@ def main():
     pg.init()
     sur_board = pg.image.load(os.path.join(PIC_FOLDER, "bg_queen.png"))
     clock = pg.time.Clock()
-    window = pg.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
+    pg.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
     pg.display.set_caption(DISPLAY_CAPTION)
     screen = pg.display.get_surface()
     queen.const = ((screen, pg.image.load(os.path.join(PIC_FOLDER, "vg_queen.png"))))
