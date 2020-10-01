@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import pygame as pg, sys, os
 from minimax import find_best_move
@@ -12,14 +12,21 @@ CELLS, CELLS_X, CELLS_Y = (9, 3, 3)
 CELL_WIDTH, CELL_HEIGHT = (200, 200)
 CELL_MATRIX = CELLS_X * CELL_WIDTH, CELLS_Y * CELL_HEIGHT
 DISPLAY_WIDTH, DISPLAY_HEIGHT = CELL_MATRIX
-FPS = 24
+FPS = 60
 # ---------------------------------------------
 MATRIX_COLOR = (47, 79, 79)
 GRID_COLOR = (255, 255, 0)
 GRID_WIDTH = 2
 # ---------------------------------------------
-HIDE, DRAW, WIN, LOS = (0, 1, 2, 3)
-BU_LEFT, BU_RIGHT = (1, 3)
+class Enum(object):
+  def __init__(self, tpList):
+    self.tpList = tpList
+  def __getattr__(self, name):
+    return self.tpList.index(name)
+BUTTON = Enum(('NO', 'LEFT', 'MIDD', 'RIGHT'))
+STATUS = Enum(('HIDE', 'DRAW', 'WIN', 'LOS'))
+#HIDE, DRAW, WIN, LOS = (0, 1, 2, 3)
+#BU_LEFT, BU_RIGHT = (1, 3)
 
 class Grid:
     def __init__(self, screen):
@@ -44,7 +51,7 @@ class Grid:
 class MsgBox:
     def __init__(self, screen):
         self._screen = screen
-        self._active = HIDE
+        self._active = STATUS.HIDE
         self.pic_list = [ pg.image.load(os.path.join(PIC_PATH, "game_over{}.jpg".format(x))) for x in range(1, 4) ] 
         self.pic_pos = (DISPLAY_WIDTH - CELL_WIDTH, DISPLAY_HEIGHT - 80)
     @property
@@ -63,7 +70,7 @@ class GuiBoard():
         self._board = TTTBoard()
         self._grid = Grid(self._screen)
         self._msgBox = MsgBox(self._screen)
-        self._msgStatus = HIDE
+        self._msgStatus = STATUS.HIDE
         self._game_over = False
     def draw(self):
         self._grid.draw()
@@ -76,24 +83,24 @@ class GuiBoard():
             self._grid.pic(PLAYER, player_move)
             if self._board.is_win:
                 self._game_over = True
-                self._msgBox.active = WIN
+                self._msgBox.active = STATUS.WIN
             elif self._board.is_draw:
                 self._game_over = True
-                self._msgBox.active = DRAW
+                self._msgBox.active = STATUS.DRAW
             if not self._game_over:
                 computer_move = find_best_move(self._board)
                 self._board = self._board.move(Move(computer_move))
                 self._grid.pic(COMPUTER, computer_move)
                 if self._board.is_win:
                     self._game_over = True
-                    self._msgBox.active = LOS
+                    self._msgBox.active = STATUS.LOS
                 elif self._board.is_draw:
                     self._game_over = True
-                    self._msgBox.active = DRAW
+                    self._msgBox.active = STATUS.DRAW
     def reset(self):
         self._board.reset()
         self._grid.reset()
-        self._msgBox.active = HIDE
+        self._msgBox.active = STATUS.HIDE
         self._game_over = False
     @property
     def game_over(self):
@@ -124,9 +131,9 @@ def main():
                 if event.key == pg.K_ESCAPE:
                     running = False
             if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == BU_LEFT:
+                if event.button == BUTTON.LEFT:
                     click = True
-                if event.button == BU_RIGHT:
+                if event.button == BUTTON.RIGHT:
                     reset = True
         screen.fill(MATRIX_COLOR)
         guiBoard.draw()
