@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-FIELD = 8
+FIELDS = 8
 FREE = -999
-BLANK = '|.' * FIELD + '|'
+BLANK = '|.' * FIELDS + '|'
 
-yPos = [FREE for i in range(FIELD)]
+yPos = [FREE for i in range(FIELDS)]
 loop = 0
 
 def solution():
@@ -17,15 +17,15 @@ def solution():
     print()
 
 def legal(x, y):
-    for xi in range(FIELD):
+    for xi in range(FIELDS):
         if (yPos[xi] == y) or (xi + yPos[xi] == x + y) or (xi - yPos[xi] == x - y):
             return False
     return True
 
 def main():
-    for x in range(FIELD):
+    for x in range(FIELDS):
         if yPos[x] == FREE:
-            for y in range(FIELD):
+            for y in range(FIELDS):
                 if legal(x, y):
                     yPos[x] = y
                     main()
