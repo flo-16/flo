@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 import pygame as pg, sys, os
 from collections import deque
-
+#
 FPS = 60
 PIC_FOLDER = 'res'
 DISPLAY_WIDTH, DISPLAY_HEIGHT = (440, 230)
 DISPLAY_COLOR = (198,183,107)
 DISPLAY_CAPTION = "Die Türme von Hanoi"
-
+#
 DISCS       = 4
 DISCHEIGHT  = 30
 XBORDER     = 20
 YBORDER     = 50
 YMOVING     = 22
 STEP        = 4
-
+#
 class Enum(object):
   def __init__(self, tpList):
     self.tpList = tpList
   def __getattr__(self, name):
     return self.tpList.index(name)
-
 MOVE = Enum(('STAY', 'UP', 'DOWN', 'LEFT', 'RIGHT'))
 
 class Manag(object):
