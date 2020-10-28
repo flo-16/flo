@@ -6,7 +6,7 @@ from collections import defaultdict
 FPS = 60
 PIC_FOLDER = 'res'
 
-DISPLAY_WIDTH, DISPLAY_HEIGHT = (880, 630)
+DISPLAY_WIDTH, DISPLAY_HEIGHT = (880, 650)
 TOP_BOARD = 250
 TOP_POKET = 270
 TOP_BEST = 440
@@ -16,16 +16,15 @@ LEFT_BEST = (28, 450)
 GAUGE = (LEFT_BOARD, TOP_BOARD + 130)
 MSG_RECT = (240, 560, 400, 62)
 
-DISPLAY_CAPTION = "Poker-V1.1"
+DISPLAY_CAPTION = "Poker 2.0"
 RAENGE = ['High Card', 'One Pair', 'Two Pair', 'Three', 'Straight', 'Flush', 'Full House',
          'Four', 'Straight Flush', 'Royal Flush']
-GEWINNER = ['Player', 'Bank']
 
 class Enum(object):
-    def __init__(self, tpList):
-        self.tpList = tpList
+    def __init__(self, tupelList):
+        self.tupelList = tupelList
     def __getattr__(self, name):
-        return self.tpList.index(name)
+        return self.tupelList.index(name)
 BUTTON = Enum(('NO', 'LEFT', 'MIDD', 'RIGHT'))
 
 class Help(object):
@@ -80,6 +79,7 @@ class Money(object):
         self._screen = scr
         self._pos = pos
         self._limes = limes
+        self._patt = False
         self._saldo = limes // 2
         self.outRect = pg.Rect(self._pos[0] - 1, self._pos[1] - 1, 2 * (self._limes + 1), 22)
         self.inRect = pg.Rect(self._pos[0], self._pos[1], 2 * (self._limes), 20)
@@ -91,6 +91,8 @@ class Money(object):
         pg.draw.rect(self._screen, (255,0,0), self.inRect)
         pg.draw.rect(self._screen, (0,128,0), self.saldoRect)
     def saldo(self, val):
+        if self._patt:
+            return
         bank, betrag = val
         if bank:
             self._saldo -= betrag
@@ -101,6 +103,9 @@ class Money(object):
         if self._saldo > self._limes:
             self._saldo = self._limes
         self.saldoRect = (self._pos[0], self._pos[1], 2 * (self._saldo), 20)
+    def patt(self, val):
+        self._patt = val
+    patt = property (None, patt)
     saldo = property(None, saldo)
 
 class Card(object):
@@ -124,13 +129,24 @@ class Card(object):
     def pic(self):
         return self._pic
 
+class Deck(object):
+    def __init__(self):
+        self._cards = [ (Card(x)) for x in range(52) ]
+        self._ptr = 45
+    def getCards(self):
+        if self._ptr == 45:
+            random.shuffle(self._cards)
+            self._ptr = 0
+        p = self._ptr
+        self._ptr += 9
+        return self._cards[p:p+5], self._cards[p+5:p+7], self._cards[p+7:p+9]
+ 
 class Game(object):
     def __init__(self, scr):
         self._screen = scr
+        self._deck = Deck()
         self._money = Money(self._screen, GAUGE)
         self._msg = Msgbox(self._screen, MSG_RECT)
-        self._cards = [ (Card(x)) for x in range(52) ]
-        self._deck = []
         self._dealer = False
         self._winner = False
         self._lock = False
@@ -140,30 +156,23 @@ class Game(object):
                         True: {'poket': [], 'best_Card': [], 'best_Rang': -1 }}
 
     def findWinner(self):
+        self._money.patt = False
         if self._data[False]['best_Rang'] > self._data[True]['best_Rang']:
             self._winner = False
         elif self._data[False]['best_Rang'] < self._data[True]['best_Rang']:
             self._winner = True
         else:
-            #self._winner = True
             for x in range(5):
                 if self._data[False]['best_Card'][x].val != self._data[True]['best_Card'][x].val:
                     self._winner = False if self._data[False]['best_Card'][x].val > \
                     self._data[True]['best_Card'][x].val else True
                     return
             self._msg.patt = True
+            self._money.patt = True
+
     def newGame(self):
         self._msg.patt = False
-        if len(self._deck) < 10:
-            nd = [ (x) for x in range(52) ]
-            random.shuffle(nd)
-            self._deck = nd
-        l = []
-        for _ in range(9):
-            l.append(self._cards[self._deck.pop()])
-        self._board = l[:5] 
-        self._data[False]['poket'] = l[5:7] 
-        self._data[True]['poket'] = l[7:9] 
+        self._board, self._data[False]['poket'], self._data[True]['poket'] = self._deck.getCards()
         for x in [False, True]:
             self._data[x]['best_Card'] = []
             self._data[x]['best_Rang'] = -1
@@ -188,8 +197,6 @@ class Game(object):
             self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_BOARD, TOP_BOARD))
         for counter, item in enumerate(self._data[False]['poket']):
             self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_POKET[0], TOP_POKET))
-        for x in range(2):
-            self._screen.blit(self._dummy_pic.convert_alpha(),(x * 82 + LEFT_POKET[1], TOP_POKET))  
         if self._dealer:
             for counter, item in enumerate(self._data[False]['best_Card']):
                 self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_BEST[0], TOP_BEST))
@@ -198,6 +205,9 @@ class Game(object):
             for counter, item in enumerate(self._data[True]['best_Card']):
                 self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_BEST[1], TOP_BEST))
             self._msg.draw()
+        else:
+            for x in range(2):
+                self._screen.blit(self._dummy_pic.convert_alpha(),(x * 82 + LEFT_POKET[1], TOP_POKET))  
 
     def bewerte5(self, karten5):
         wert2karten = defaultdict(list)
@@ -273,10 +283,10 @@ def main():
     random.seed()
     pg.init()
     clock = pg.time.Clock()
-    window = pg.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
+    pg.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
     pg.display.set_caption(DISPLAY_CAPTION)
     screen = pg.display.get_surface()
-    bg_pic = pg.image.load(os.path.join(PIC_FOLDER,'bg_poker1.jpg'))
+    bg_pic = pg.image.load(os.path.join(PIC_FOLDER,'bg_poker2.jpg'))
     game = Game(screen)
     help = Help(screen)
     click = False
@@ -311,6 +321,8 @@ def main():
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == BUTTON.LEFT:
                     click = True
+                if event.button == BUTTON.RIGHT:
+                    help.switch()
         screen.blit(bg_pic.convert(),(0, 0))
         game.draw()
         help.draw()
