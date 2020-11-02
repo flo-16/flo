@@ -2,6 +2,7 @@
 import pygame as pg, sys, os, random
 from itertools import combinations
 from collections import defaultdict 
+from enum import IntEnum
 
 FPS = 60
 PIC_FOLDER = 'res'
@@ -20,12 +21,9 @@ DISPLAY_CAPTION = "Poker 2.0"
 RAENGE = ['High Card', 'One Pair', 'Two Pair', 'Three', 'Straight', 'Flush', 'Full House',
          'Four', 'Straight Flush', 'Royal Flush']
 
-class Enum(object):
-    def __init__(self, tupelList):
-        self.tupelList = tupelList
-    def __getattr__(self, name):
-        return self.tupelList.index(name)
-BUTTON = Enum(('NO', 'LEFT', 'MIDD', 'RIGHT'))
+class MouseButton(IntEnum):
+    LEFT = 1
+    RIGHT = 3
 
 class Help(object):
     def __init__(self, scr):
@@ -41,9 +39,9 @@ class Help(object):
         self._hide = not self._hide
 
 class Msgbox(object):
-    def __init__(self, scr, rect):
+    def __init__(self, scr):
         self._screen = scr
-        self._rect = rect
+        self._rect = MSG_RECT
         self._patt = False
         self._inRect = (self._rect[0] + 1, self._rect[1] + 1, self._rect[2] - 2, self._rect[3] - 2)
         self._visible = False
@@ -53,8 +51,8 @@ class Msgbox(object):
     def draw(self):
         if not self._visible:
             return    
-        pg.draw.rect(self._screen, (0,0,0), self._rect)
-        pg.draw.rect(self._screen, (255,255,255), self._inRect)
+        pg.draw.rect(self._screen, (0, 0, 0), self._rect)
+        pg.draw.rect(self._screen, (255, 255, 255), self._inRect)
         self._screen.blit(self._render, self._pos)
     def setMsg(self, win, r0, r1):
         if self._patt:
@@ -75,21 +73,22 @@ class Msgbox(object):
         self._patt = val
 
 class Money(object):
-    def __init__(self, scr, pos, limes = 200):
+    def __init__(self, scr):
         self._screen = scr
-        self._pos = pos
-        self._limes = limes
+        self._pos = (LEFT_BOARD, TOP_BOARD + 130)
+        self._limes = 200
         self._patt = False
-        self._saldo = limes // 2
+        self._saldo = self._limes // 2
+        self._saldo = 100
         self.outRect = pg.Rect(self._pos[0] - 1, self._pos[1] - 1, 2 * (self._limes + 1), 22)
         self.inRect = pg.Rect(self._pos[0], self._pos[1], 2 * (self._limes), 20)
         self.saldoRect = (self._pos[0], self._pos[1], 2 * (self._saldo), 20)
     def draw(self):
         if not self._saldo:
             return
-        pg.draw.rect(self._screen, (0,0,0), self.outRect)
-        pg.draw.rect(self._screen, (255,0,0), self.inRect)
-        pg.draw.rect(self._screen, (0,128,0), self.saldoRect)
+        pg.draw.rect(self._screen, (0, 0, 0), self.outRect)
+        pg.draw.rect(self._screen, (255, 0, 0), self.inRect)
+        pg.draw.rect(self._screen, (0, 128, 0), self.saldoRect)
     def saldo(self, val):
         if self._patt:
             return
@@ -143,10 +142,10 @@ class Deck(object):
  
 class Game(object):
     def __init__(self, scr):
+        self._money = Money(scr)
+        self._msg = Msgbox(scr)
         self._screen = scr
         self._deck = Deck()
-        self._money = Money(self._screen, GAUGE)
-        self._msg = Msgbox(self._screen, MSG_RECT)
         self._dealer = False
         self._winner = False
         self._lock = False
@@ -198,6 +197,8 @@ class Game(object):
         for counter, item in enumerate(self._data[False]['poket']):
             self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_POKET[0], TOP_POKET))
         if self._dealer:
+            pg.draw.rect(self._screen, (0, 128, 0), (20, 430, 416, 120))
+            pg.draw.rect(self._screen, (255, 0, 0), (442, 430, 416, 120))
             for counter, item in enumerate(self._data[False]['best_Card']):
                 self._screen.blit(item.pic.convert_alpha(), (counter * 82 + LEFT_BEST[0], TOP_BEST))
             for counter, item in enumerate(self._data[True]['poket']):
@@ -319,9 +320,9 @@ def main():
                 if event.key == pg.K_ESCAPE:
                     running = False
             if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == BUTTON.LEFT:
+                if event.button == MouseButton.LEFT:
                     click = True
-                if event.button == BUTTON.RIGHT:
+                if event.button == MouseButton.RIGHT:
                     help.switch()
         screen.blit(bg_pic.convert(),(0, 0))
         game.draw()
