@@ -36,6 +36,14 @@ MSG_POS = (20, 720)
 MSG_BG_COLOR = (30,144,255)
 MSG_COLOR = (255,255,255)
 
+depth = DEPTH
+try:
+    depth = int(sys.argv[1])
+    if depth < 3 or depth > 8:
+        depth = DEPTH
+except: 
+    depth = DEPTH
+
 pos2Index = collections.defaultdict(list)   # Relation Index - Quads
 spielfeld = {}                              # Key = (spalte,zeile), value = 'O' oder 'X'
 screenList = []                             # Anzeige auf Screen - keine Sprites
@@ -139,7 +147,7 @@ def computer(spieler):
     bewerte_zuege = []
     for zug in zugliste():
         win = steinSetzen(zug, spieler, False)
-        score = minimax(DEPTH, -999999, 999999, spieler, win)
+        score = minimax(depth, -999999, 999999, spieler, win)
         steinLoeschen(zug, spieler, False)
         bewerte_zuege.append((score, zug))
     bewerte_zuege.sort(reverse = spieler)
@@ -213,7 +221,7 @@ pg.init()
 clock = pg.time.Clock()
 window = pg.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 
-msg_caption = "*** GEWINNE GEGEN PUSSEL IN LEVEL {} ***".format(DEPTH)
+msg_caption = "*** GEWINNE GEGEN PUSSEL IN LEVEL {} ***".format(depth)
 pg.display.set_caption(msg_caption)
 screen = pg.display.get_surface()
 backGround = pg.image.load(os.path.join(PIC_PATH, PIC_BG))
