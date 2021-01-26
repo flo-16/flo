@@ -1,7 +1,7 @@
 #include <Arduino.h>            // Achtung: Arduino-IDE: Diese Zeile auskommentieren !!! 
 
 /******************************************************************************************
- * Snippet : Serieller Output - Text und Zahlen gemischt                                  *
+ * Snippet : Serieller Output - Text und Zahlen gemischt ausgeben                                 *
  *                                                                                        *
  * 26.01.2021                                                                             *
  * Uwe Hannen                                                                             *
